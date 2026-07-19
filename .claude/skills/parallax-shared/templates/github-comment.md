@@ -1,4 +1,3 @@
-````markdown
 # GitHub Comment Template
 
 Used only when the user has explicitly authorized posting comments
@@ -23,7 +22,6 @@ fields directly:
 
 <sub>Source: {{source.system}}{{#if source.source_id}} ({{source.source_id}}){{/if}} · Confidence: {{status.confidence}} · {{status.evidence_state}}</sub>
 ```
-````
 
 - `comment_type` is one of `request_change | question | suggestion | nit` —
   never post a `blocker`-level finding as anything other than

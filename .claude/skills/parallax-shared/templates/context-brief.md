@@ -1,4 +1,3 @@
-````markdown
 # Context Brief Template
 
 Produced once by the orchestrator (Stage 0–2), passed to every dispatched
@@ -56,4 +55,3 @@ subagent. A subagent should never need to re-derive any of this itself.
 Missing context is not a code defect (main spec Section 10, Stage 0) — if
 a field above is unknown, write "unknown" rather than guessing, and let
 the general review's Intent dimension raise it as a question.
-````

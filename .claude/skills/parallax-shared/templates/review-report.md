@@ -1,4 +1,3 @@
-````markdown
 # Review Report Template
 
 Produced once by the orchestrator after Stage 7–10, over every dispatched
@@ -48,4 +47,3 @@ subagent's combined canonical findings.
 
 approve | comment | request_changes | insufficient_context
 ```
-````

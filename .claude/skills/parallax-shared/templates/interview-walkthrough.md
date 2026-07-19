@@ -1,4 +1,3 @@
-````markdown
 # Interview Walkthrough Template
 
 Produced only when interview mode is active (main spec Section 10, Stage
@@ -35,7 +34,6 @@ Produced only when interview mode is active (main spec Section 10, Stage
 
 ## Final Merge Recommendation
 ```
-````
 
 The three "Main Concern" slots are the top three findings by merge impact
 across all dispatched subagents, not per-subagent — this is why only the
