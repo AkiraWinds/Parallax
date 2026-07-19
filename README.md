@@ -30,19 +30,38 @@ real risk, understand the change, and make an evidence-based merge decision.
 
 | System       | Role                                                                                          |
 | ------------ | --------------------------------------------------------------------------------------------- |
-| **Akira**    | Observes what the agent system has actually become.                                           |
 | **SANYI**    | Governs whether the change respects the architecture change contract.                         |
 | **Parallax** | Judges the change from multiple perspectives — combines, verifies, and decides if it's ready. |
 
 ```text
-Akira observes.
 SANYI governs.
 Parallax judges the change from multiple perspectives.
 ```
 
-Parallax integrates Akira and SANYI findings without replacing or rewriting
-their native output schemas — each remains an independent system with its
-own lifecycle, reachable and useful outside of a PR review.
+Parallax integrates SANYI's findings without replacing or rewriting its
+native output schema — SANYI remains an independent system with its own
+lifecycle, reachable and useful outside of a PR review. One of Parallax's
+review subagents preloads SANYI's ruleset directly (via a Claude Code
+subagent's `skills:` field) so that composition is guaranteed whenever a
+repo has a `SANYI.md`, rather than depending on a runtime decision to
+invoke it — see "How it works" below.
+
+## How it works
+
+Parallax is a thin orchestrator that dispatches up to seven parallel
+subagents, each preloaded with exactly the skill for its own review
+dimension: intent & correctness, reliability & operations, security &
+data, architecture & docs, and — only for agent-system PRs — agent runtime
+& tooling, accountability & safeguards, plus SANYI itself when a
+`SANYI.md` exists. Each subagent verifies its own findings before
+returning them; the orchestrator merges everything, removes duplicates,
+and produces one unified report.
+
+Detection isn't a single point of failure: if the initial pass misses that
+a PR is agent-related, the always-on subagents can flag what they notice
+during their own review, and the orchestrator dispatches the agent-specific
+subagents afterward as a correction — rather than silently missing it for
+the rest of the run.
 
 ## Core philosophy
 
