@@ -31,7 +31,3 @@ fields directly:
 - Never post a Hypothesis or Question phrased as a confirmed defect — the
   template's evidence_state tag exists specifically so the reader can see
   this at a glance.
-
-```
-
-```

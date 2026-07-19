@@ -14,7 +14,6 @@ Produced only when interview mode is active (main spec Section 10, Stage
 ## What the PR Does Well
 
 ## Main Concern 1
-
 - observation
 - scenario
 - impact
@@ -42,7 +41,3 @@ The three "Main Concern" slots are the top three findings by merge impact
 across all dispatched subagents, not per-subagent — this is why only the
 orchestrator assembles this document (main spec Section 23;
 `references/interview-mode.md`).
-
-```
-
-```

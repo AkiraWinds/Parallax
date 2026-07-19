@@ -30,7 +30,6 @@ subagent's combined canonical findings.
 ## 11. Source-System Summary
 
 ### Subagent Dispatch
-
 - A (Intent, Correctness & Testing): dispatched / completed | failed after retries
 - B (Reliability & Operations): dispatched / completed | failed after retries
 - C (Security, Privacy & Data): dispatched / completed | failed after retries
@@ -40,7 +39,6 @@ subagent's combined canonical findings.
 - G (SANYI): dispatched | skipped (no SANYI.md) / completed | failed after retries
 
 ### SANYI
-
 - contract found:
 - review invoked:
 - source verdict:
@@ -51,7 +49,3 @@ subagent's combined canonical findings.
 approve | comment | request_changes | insufficient_context
 ```
 ````
-
-```
-
-```
