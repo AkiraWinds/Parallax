@@ -63,6 +63,56 @@ during their own review, and the orchestrator dispatches the agent-specific
 subagents afterward as a correction — rather than silently missing it for
 the rest of the run.
 
+Merging findings from all dispatched subagents is a two-pass process, and
+only the second pass is model judgment. The first pass — clustering
+findings that touch overlapping files/lines and share a category or
+symbol — is deterministic code
+([`parallax/orchestration/deduplication.py`](parallax/orchestration/deduplication.py)),
+so duplicate detection isn't relying on an LLM to compare every finding
+against every other finding from scratch. The orchestrator then judges,
+only within each small cluster, whether the findings are actually the same
+root cause.
+
+## Repository layout
+
+```text
+.claude/
+├── agents/         # the orchestrator + one subagent per review dimension
+└── skills/         # one skill per dimension, plus parallax-shared and
+                     # sanyi (vendored) — preloaded into subagents via each
+                     # agent's `skills:` frontmatter, not invoked at runtime
+
+parallax/
+├── schemas/        # canonical finding/report schema (Pydantic + exported
+                     # JSON Schema) every subagent's output is validated against
+└── orchestration/  # deterministic, non-LLM support code the orchestrator
+                     # calls into: dedup pre-filter, merge-impact prioritization,
+                     # agent-system signal detection, git diff-scope resolution,
+                     # Markdown report rendering
+
+config.py            # tunables: dedup tolerance, SANYI severity defaults,
+                     # subagent retry limit, time budget
+tests/               # unit + golden tests for everything under parallax/
+```
+
+The `.claude/` tree is what Claude Code actually discovers and runs; the
+`parallax/` package is the deterministic backbone those agents call into
+via their `Bash` tool for the steps this project treats as too important
+to leave to model judgment alone (schema validation, the dedup pre-filter,
+report structure). Building an agent and building this code are two
+separate, complementary tracks — see
+`docs/documents/Evidence_Driven_PR_Review_System_Spec.md` Section 26 for
+the full phased breakdown.
+
+## Development
+
+```bash
+uv run pytest                                    # run the test suite
+uv run python -m parallax.schemas.export_schemas # regenerate the committed
+                                                  # JSON Schema files after
+                                                  # editing models.py
+```
+
 ## Core philosophy
 
 > Different perspectives. Better judgment.

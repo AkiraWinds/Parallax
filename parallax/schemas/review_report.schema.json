@@ -1,0 +1,750 @@
+{
+  "$defs": {
+    "Claim": {
+      "properties": {
+        "title": {
+          "title": "Title",
+          "type": "string"
+        },
+        "observation": {
+          "title": "Observation",
+          "type": "string"
+        },
+        "failure_scenario": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Failure Scenario"
+        },
+        "impact": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Impact"
+        }
+      },
+      "required": [
+        "title",
+        "observation"
+      ],
+      "title": "Claim",
+      "type": "object"
+    },
+    "CommentType": {
+      "enum": [
+        "request_change",
+        "question",
+        "suggestion",
+        "nit"
+      ],
+      "title": "CommentType",
+      "type": "string"
+    },
+    "Communication": {
+      "properties": {
+        "comment_type": {
+          "$ref": "#/$defs/CommentType"
+        },
+        "proposed_comment": {
+          "title": "Proposed Comment",
+          "type": "string"
+        }
+      },
+      "required": [
+        "comment_type",
+        "proposed_comment"
+      ],
+      "title": "Communication",
+      "type": "object"
+    },
+    "Confidence": {
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ],
+      "title": "Confidence",
+      "type": "string"
+    },
+    "Evidence": {
+      "properties": {
+        "direct": {
+          "items": {
+            "$ref": "#/$defs/EvidenceItem"
+          },
+          "title": "Direct",
+          "type": "array"
+        },
+        "supporting": {
+          "items": {
+            "$ref": "#/$defs/EvidenceItem"
+          },
+          "title": "Supporting",
+          "type": "array"
+        },
+        "assumptions": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Assumptions",
+          "type": "array"
+        },
+        "verification_attempted": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Verification Attempted",
+          "type": "array"
+        },
+        "remaining_uncertainty": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Remaining Uncertainty",
+          "type": "array"
+        }
+      },
+      "title": "Evidence",
+      "type": "object"
+    },
+    "EvidenceItem": {
+      "properties": {
+        "type": {
+          "title": "Type",
+          "type": "string"
+        },
+        "reference": {
+          "title": "Reference",
+          "type": "string"
+        },
+        "detail": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Detail"
+        }
+      },
+      "required": [
+        "type",
+        "reference"
+      ],
+      "title": "EvidenceItem",
+      "type": "object"
+    },
+    "EvidenceState": {
+      "enum": [
+        "verified",
+        "supported",
+        "hypothesis",
+        "question"
+      ],
+      "title": "EvidenceState",
+      "type": "string"
+    },
+    "FileLocation": {
+      "properties": {
+        "path": {
+          "title": "Path",
+          "type": "string"
+        },
+        "start_line": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Start Line"
+        },
+        "end_line": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "End Line"
+        }
+      },
+      "required": [
+        "path"
+      ],
+      "title": "FileLocation",
+      "type": "object"
+    },
+    "Lens": {
+      "properties": {
+        "category": {
+          "$ref": "#/$defs/LensCategory"
+        },
+        "subcategory": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Subcategory"
+        }
+      },
+      "required": [
+        "category"
+      ],
+      "title": "Lens",
+      "type": "object"
+    },
+    "LensCategory": {
+      "enum": [
+        "correctness",
+        "reliability",
+        "security",
+        "data",
+        "architecture",
+        "testing",
+        "operations",
+        "agent_behavior",
+        "evaluation",
+        "communication"
+      ],
+      "title": "LensCategory",
+      "type": "string"
+    },
+    "Location": {
+      "properties": {
+        "files": {
+          "items": {
+            "$ref": "#/$defs/FileLocation"
+          },
+          "title": "Files",
+          "type": "array"
+        },
+        "symbols": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Symbols",
+          "type": "array"
+        }
+      },
+      "title": "Location",
+      "type": "object"
+    },
+    "MergeDecision": {
+      "enum": [
+        "approve",
+        "comment",
+        "request_changes",
+        "insufficient_context"
+      ],
+      "title": "MergeDecision",
+      "type": "string"
+    },
+    "MergeImpact": {
+      "enum": [
+        "blocker",
+        "important",
+        "question",
+        "suggestion",
+        "nit"
+      ],
+      "title": "MergeImpact",
+      "type": "string"
+    },
+    "NativeSeverity": {
+      "enum": [
+        "blocker",
+        "warning",
+        "info",
+        "notice"
+      ],
+      "title": "NativeSeverity",
+      "type": "string"
+    },
+    "Profile": {
+      "properties": {
+        "general": {
+          "default": true,
+          "title": "General",
+          "type": "boolean"
+        },
+        "agent_system": {
+          "default": false,
+          "title": "Agent System",
+          "type": "boolean"
+        }
+      },
+      "title": "Profile",
+      "type": "object"
+    },
+    "Recommendation": {
+      "properties": {
+        "options": {
+          "items": {
+            "$ref": "#/$defs/RecommendationOption"
+          },
+          "title": "Options",
+          "type": "array"
+        },
+        "validation": {
+          "items": {
+            "type": "string"
+          },
+          "title": "Validation",
+          "type": "array"
+        }
+      },
+      "title": "Recommendation",
+      "type": "object"
+    },
+    "RecommendationOption": {
+      "properties": {
+        "description": {
+          "title": "Description",
+          "type": "string"
+        },
+        "tradeoffs": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Tradeoffs"
+        }
+      },
+      "required": [
+        "description"
+      ],
+      "title": "RecommendationOption",
+      "type": "object"
+    },
+    "Recoverability": {
+      "enum": [
+        "easy",
+        "moderate",
+        "difficult",
+        "unknown"
+      ],
+      "title": "Recoverability",
+      "type": "string"
+    },
+    "ReviewAssessment": {
+      "properties": {
+        "merge_impact": {
+          "$ref": "#/$defs/MergeImpact"
+        },
+        "blocking_rationale": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Blocking Rationale"
+        },
+        "user_impact": {
+          "$ref": "#/$defs/UnknownableLevel",
+          "default": "unknown"
+        },
+        "blast_radius": {
+          "$ref": "#/$defs/UnknownableLevel",
+          "default": "unknown"
+        },
+        "recoverability": {
+          "$ref": "#/$defs/Recoverability",
+          "default": "unknown"
+        }
+      },
+      "required": [
+        "merge_impact"
+      ],
+      "title": "ReviewAssessment",
+      "type": "object"
+    },
+    "ReviewFinding": {
+      "properties": {
+        "review_finding_id": {
+          "title": "Review Finding Id",
+          "type": "string"
+        },
+        "source": {
+          "$ref": "#/$defs/Source"
+        },
+        "profile": {
+          "$ref": "#/$defs/Profile"
+        },
+        "lens": {
+          "$ref": "#/$defs/Lens"
+        },
+        "status": {
+          "$ref": "#/$defs/Status"
+        },
+        "location": {
+          "$ref": "#/$defs/Location"
+        },
+        "claim": {
+          "$ref": "#/$defs/Claim"
+        },
+        "evidence": {
+          "$ref": "#/$defs/Evidence"
+        },
+        "source_semantics": {
+          "$ref": "#/$defs/SourceSemantics"
+        },
+        "review_assessment": {
+          "$ref": "#/$defs/ReviewAssessment"
+        },
+        "recommendation": {
+          "$ref": "#/$defs/Recommendation"
+        },
+        "communication": {
+          "$ref": "#/$defs/Communication"
+        }
+      },
+      "required": [
+        "review_finding_id",
+        "source",
+        "profile",
+        "lens",
+        "status",
+        "location",
+        "claim",
+        "evidence",
+        "review_assessment",
+        "communication"
+      ],
+      "title": "ReviewFinding",
+      "type": "object"
+    },
+    "SanyiSummary": {
+      "properties": {
+        "contract_found": {
+          "title": "Contract Found",
+          "type": "boolean"
+        },
+        "review_invoked": {
+          "title": "Review Invoked",
+          "type": "boolean"
+        },
+        "source_verdict": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Verdict"
+        },
+        "findings_imported": {
+          "default": 0,
+          "title": "Findings Imported",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "contract_found",
+        "review_invoked"
+      ],
+      "title": "SanyiSummary",
+      "type": "object"
+    },
+    "Source": {
+      "properties": {
+        "system": {
+          "$ref": "#/$defs/SourceSystem"
+        },
+        "source_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Id"
+        },
+        "source_type": {
+          "$ref": "#/$defs/SourceType"
+        },
+        "source_contract_entry": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Source Contract Entry"
+        }
+      },
+      "required": [
+        "system",
+        "source_type"
+      ],
+      "title": "Source",
+      "type": "object"
+    },
+    "SourceSemantics": {
+      "properties": {
+        "native_severity": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/NativeSeverity"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "native_code": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Native Code"
+        }
+      },
+      "title": "SourceSemantics",
+      "type": "object"
+    },
+    "SourceSystem": {
+      "enum": [
+        "parallax",
+        "sanyi"
+      ],
+      "title": "SourceSystem",
+      "type": "string"
+    },
+    "SourceType": {
+      "enum": [
+        "native",
+        "adapted"
+      ],
+      "title": "SourceType",
+      "type": "string"
+    },
+    "Status": {
+      "properties": {
+        "evidence_state": {
+          "$ref": "#/$defs/EvidenceState"
+        },
+        "confidence": {
+          "$ref": "#/$defs/Confidence"
+        }
+      },
+      "required": [
+        "evidence_state",
+        "confidence"
+      ],
+      "title": "Status",
+      "type": "object"
+    },
+    "SubagentDispatchEntry": {
+      "properties": {
+        "letter": {
+          "$ref": "#/$defs/SubagentLetter"
+        },
+        "dispatched": {
+          "title": "Dispatched",
+          "type": "boolean"
+        },
+        "status": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/SubagentStatus"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
+        },
+        "skip_reason": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Skip Reason"
+        }
+      },
+      "required": [
+        "letter",
+        "dispatched"
+      ],
+      "title": "SubagentDispatchEntry",
+      "type": "object"
+    },
+    "SubagentLetter": {
+      "description": "The seven dispatchable subagents (parent spec Section 16.2).",
+      "enum": [
+        "A",
+        "B",
+        "C",
+        "D",
+        "E",
+        "F",
+        "G"
+      ],
+      "title": "SubagentLetter",
+      "type": "string"
+    },
+    "SubagentStatus": {
+      "enum": [
+        "completed",
+        "skipped",
+        "failed_after_retries"
+      ],
+      "title": "SubagentStatus",
+      "type": "string"
+    },
+    "UnknownableLevel": {
+      "description": "Shared by user_impact / blast_radius (Section 11.1).",
+      "enum": [
+        "high",
+        "medium",
+        "low",
+        "unknown"
+      ],
+      "title": "UnknownableLevel",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "overall_understanding": {
+      "title": "Overall Understanding",
+      "type": "string"
+    },
+    "review_contract": {
+      "title": "Review Contract",
+      "type": "string"
+    },
+    "change_and_execution_map": {
+      "title": "Change And Execution Map",
+      "type": "string"
+    },
+    "strengths": {
+      "title": "Strengths",
+      "type": "string"
+    },
+    "blocking_findings": {
+      "items": {
+        "$ref": "#/$defs/ReviewFinding"
+      },
+      "title": "Blocking Findings",
+      "type": "array"
+    },
+    "important_findings": {
+      "items": {
+        "$ref": "#/$defs/ReviewFinding"
+      },
+      "title": "Important Findings",
+      "type": "array"
+    },
+    "questions_and_hypotheses": {
+      "items": {
+        "$ref": "#/$defs/ReviewFinding"
+      },
+      "title": "Questions And Hypotheses",
+      "type": "array"
+    },
+    "suggestions": {
+      "items": {
+        "$ref": "#/$defs/ReviewFinding"
+      },
+      "title": "Suggestions",
+      "type": "array"
+    },
+    "testing_evaluation_assessment": {
+      "title": "Testing Evaluation Assessment",
+      "type": "string"
+    },
+    "definition_of_done_assessment": {
+      "title": "Definition Of Done Assessment",
+      "type": "string"
+    },
+    "subagent_dispatch": {
+      "items": {
+        "$ref": "#/$defs/SubagentDispatchEntry"
+      },
+      "title": "Subagent Dispatch",
+      "type": "array"
+    },
+    "sanyi_summary": {
+      "anyOf": [
+        {
+          "$ref": "#/$defs/SanyiSummary"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
+    },
+    "merge_decision": {
+      "$ref": "#/$defs/MergeDecision"
+    }
+  },
+  "required": [
+    "overall_understanding",
+    "review_contract",
+    "change_and_execution_map",
+    "strengths",
+    "testing_evaluation_assessment",
+    "definition_of_done_assessment",
+    "subagent_dispatch",
+    "merge_decision"
+  ],
+  "title": "ReviewReport",
+  "type": "object"
+}

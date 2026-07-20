@@ -1,0 +1,79 @@
+# PR Review
+
+## 1. Overall Understanding
+
+This PR adds a retry wrapper around the payment webhook handler.
+
+## 2. Review Contract
+
+General profile. No explicit agent-system declaration; no signals detected.
+
+## 3. Change and Execution Map
+
+input -> validate -> call payment provider -> persist -> ack
+
+## 4. What Looks Strong
+
+Test coverage for the happy path is thorough.
+
+## 5. Blocking Findings
+
+### PR-C-001 — Retry may duplicate an external side effect
+- Evidence state: verified (confidence: high)
+- Merge impact: blocker
+- Location: src/handler.py:10-20
+- Observation: Something was observed.
+
+### PR-G-001 — Buyi invariant made bypassable
+- Evidence state: verified (confidence: high)
+- Merge impact: blocker
+- Location: backend/security/masking.py:5-8
+- Observation: Something was observed.
+- Source: sanyi (BY-2)
+
+## 6. Important Findings
+
+_None._
+
+## 7. Questions and Unverified Hypotheses
+
+### PR-A-001 — Unclear how partial success is surfaced to the caller
+- Evidence state: question (confidence: high)
+- Merge impact: question
+- Location: src/handler.py:30-35
+- Observation: Something was observed.
+
+## 8. Suggestions
+
+_None._
+
+## 9. Testing and Evaluation Assessment
+
+No test covers the partial-success path.
+
+## 10. Definition of Done Assessment
+
+Rollback plan is undocumented.
+
+## 11. Source-System Summary
+
+### Subagent Dispatch
+
+- A (Intent, Correctness & Testing): dispatched / completed
+- B (Reliability & Operations): dispatched / completed
+- C (Security, Privacy & Data): dispatched / completed
+- D (Architecture & Documentation): dispatched / failed after retries
+- E (Agent Runtime & Tooling): skipped (Agent-System Extension not active)
+- F (Accountability & Safeguards): skipped (Agent-System Extension not active)
+- G (SANYI): dispatched / completed
+
+### SANYI
+
+- contract found: True
+- review invoked: True
+- source verdict: This diff changes the change-contract structure.
+- findings imported: 1
+
+## 12. Suggested Merge Decision
+
+request_changes
