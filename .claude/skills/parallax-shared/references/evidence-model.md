@@ -47,6 +47,18 @@ the evidence available to you:
 - run repeated scenarios for nondeterministic behavior
 - downgrade unsupported claims to Hypothesis or Question rather than
   asserting them as Verified
+- validate each finding's JSON against the canonical schema before
+  returning it — don't just eyeball it:
+
+  ```bash
+  echo '<your finding, as JSON>' \
+    | parallax-cli validate-finding
+  ```
+
+  A finding that doesn't come back `{"valid": true}` is malformed, not
+  just weakly evidenced — fix the JSON (e.g. a `review_finding_id` not
+  namespaced as `PR-<your letter>-NNN`) before returning it, the same way
+  you'd fix an unsupported claim rather than return it as-is.
 
 The orchestrator does not re-verify your findings from scratch — it only
 reconciles cases where two subagents' findings conflict, or where

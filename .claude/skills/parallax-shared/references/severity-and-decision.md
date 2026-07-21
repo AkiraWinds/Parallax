@@ -56,3 +56,14 @@ SANYI JY-2 warning
 → canonical merge impact: important or suggestion
 → human decision required
 ```
+
+If you're the `sanyi-review` subagent proposing an initial merge impact
+for one of your own findings, get the default from the CLI rather than
+re-deriving this table from memory — it's a starting suggestion the
+orchestrator (or a human) may still override per Section 14.2, not a
+rule to skip:
+
+```bash
+echo '{"severity": "warning"}' \
+  | parallax-cli sanyi-default-impact
+```

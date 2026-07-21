@@ -35,10 +35,21 @@ class NoBaseBranchError(RuntimeError):
     Stage 0)."""
 
 
+class GitCommandError(RuntimeError):
+    """A `git` subprocess call failed. Carries git's own stderr — a bare
+    `CalledProcessError` only carries the exit code, which leaves the
+    caller (a human reading a CLI error, or an agent parsing it) with no
+    way to tell a real repo problem from something as simple as a `diff`
+    alias in the target repo's `.gitconfig` adding a conflicting flag."""
+
+
 def _run_git(args: list[str], cwd: str) -> str:
-    result = subprocess.run(
-        ["git", *args], cwd=cwd, capture_output=True, text=True, check=True
-    )
+    result = subprocess.run(["git", *args], cwd=cwd, capture_output=True, text=True)
+    if result.returncode != 0:
+        raise GitCommandError(
+            f"`git {' '.join(args)}` failed in {cwd!r} "
+            f"(exit {result.returncode}): {result.stderr.strip()}"
+        )
     return result.stdout
 
 

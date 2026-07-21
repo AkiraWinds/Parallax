@@ -104,6 +104,56 @@ separate, complementary tracks — see
 `docs/documents/Evidence_Driven_PR_Review_System_Spec.md` Section 26 for
 the full phased breakdown.
 
+## Installation
+
+The agents call into `parallax/` through a small CLI (`parallax/cli.py`),
+which needs to be on `PATH` regardless of which repo is under review.
+Install it once, globally, from this repo:
+
+```bash
+uv tool install --editable .
+```
+
+That gives you a `parallax-cli` command usable from any directory
+(`--editable` means it picks up code changes immediately, without
+reinstalling). This is a one-time setup step per machine, not something
+each review session needs to repeat.
+
+## Usage
+
+Two things need to be true before Parallax can review anything, on top
+of the CLI install above:
+
+1. **The agents/skills are discoverable by Claude Code.** Claude Code
+   only finds agents and skills under `.claude/` in the current project,
+   or under `~/.claude/` for every project — there's no other search
+   path. Pick whichever fits:
+
+   - **Personal use, across every repo you open**: copy (or symlink)
+     this repo's `.claude/agents/` and `.claude/skills/` into
+     `~/.claude/agents/` and `~/.claude/skills/`. One-time, works
+     everywhere afterward.
+   - **Shared with a team, for one specific repo**: copy the same two
+     folders into that repo's own `.claude/` and commit them, the same
+     way this repo vendors SANYI's skill (see Repository layout above).
+
+2. **`parallax-cli` is on `PATH`** — the Installation step above,
+   already done once per machine.
+
+With both in place, inside a Claude Code session in the repo you want
+reviewed:
+
+- **Full review**: ask to review a PR or diff "with Parallax," or
+  invoke the `parallax` agent directly. It runs Stage 0–2 once, dispatches
+  the applicable subagents in parallel, merges and deduplicates their
+  findings, and returns one unified report — general dimensions always,
+  agent-system dimensions when relevant, SANYI's when `SANYI.md` exists.
+- **One dimension only, no orchestration**: invoke a single subagent by
+  name (e.g. `security-privacy-data-review`) for a lighter, single-lens
+  look. Faster, but you lose deduplication, Definition of Done, and a
+  unified report across dimensions — see the spec's Section 16.4 for
+  exactly what that trades away.
+
 ## Development
 
 ```bash
@@ -111,6 +161,9 @@ uv run pytest                                    # run the test suite
 uv run python -m parallax.schemas.export_schemas # regenerate the committed
                                                   # JSON Schema files after
                                                   # editing models.py
+uv tool install --editable . --reinstall         # after changing
+                                                  # [project.scripts] or
+                                                  # dependencies
 ```
 
 ## Core philosophy

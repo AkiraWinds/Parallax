@@ -14,6 +14,14 @@ allowed-tools:
 Cross-cutting rules that apply across every review dimension. Every
 subagent and the orchestrator preload this skill alongside their own.
 
+A few of these rules are backed by real, deterministic code, not just
+prose — `parallax/orchestration/` and `parallax/schemas/`, reachable via
+the globally-installed `parallax-cli <subcommand>` (`uv tool install
+--editable .` from the Parallax repo, once — no per-session setup needed
+after that). Where a rule below has a matching CLI subcommand, run it —
+that's the one guarantee here that isn't just "the model tried to
+remember the rule correctly."
+
 ## Evidence classification (operational summary)
 
 Every candidate finding must be classified before it's returned:
@@ -82,3 +90,17 @@ output shape.
 | `templates/review-report.md`         | orchestrator, final unified report                                                     |
 | `templates/github-comment.md`        | orchestrator, when posting a finding as a PR comment (requires explicit authorization) |
 | `templates/interview-walkthrough.md` | orchestrator, interview mode output                                                    |
+
+## CLI subcommands (`parallax.cli`)
+
+| Subcommand             | Used by                     | Backs                                       |
+| ---------------------- | --------------------------- | ------------------------------------------- |
+| `validate-finding`     | every subagent (A–G)        | Stage 6 self-verification, before returning |
+| `validate-report`      | orchestrator                | Stage 9, before finalizing the report       |
+| `dedup`                | orchestrator                | Stage 7 step 1, deterministic pre-filter    |
+| `bucket`               | orchestrator                | Stage 7 step 4, report-section sorting      |
+| `sanyi-default-impact` | `sanyi-review` (Subagent G) | severity-and-decision.md's example mappings |
+| `detect-signals`       | orchestrator                | Stage 1–2, Section 9.2 fallback detection   |
+| `diff-scope`           | orchestrator                | Stage 1, diff-scope resolution              |
+| `render-report`        | orchestrator                | Stage 8–10, final Markdown report           |
+| `render-interview`     | orchestrator                | Stage 10, interview walkthrough             |

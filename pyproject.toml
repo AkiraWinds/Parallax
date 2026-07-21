@@ -8,6 +8,13 @@ dependencies = [
     "pydantic>=2.13.4",
 ]
 
+[project.scripts]
+parallax-cli = "parallax.cli:main"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [dependency-groups]
 dev = [
     "pytest>=9.1.1",

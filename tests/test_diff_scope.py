@@ -14,7 +14,9 @@ import pytest
 
 from parallax.orchestration.diff_scope import (
     DiffScopeMode,
+    GitCommandError,
     NoBaseBranchError,
+    _run_git,
     resolve_diff_scope,
 )
 
@@ -68,3 +70,18 @@ def test_branch_diff_used_when_clean(repo, tmp_path):
 def test_raises_when_clean_and_no_base_branch_given(repo):
     with pytest.raises(NoBaseBranchError):
         resolve_diff_scope(repo)
+
+
+def test_git_failure_surfaces_gits_own_stderr(repo):
+    """A real git error (bad flag) must raise GitCommandError carrying
+    git's own message — not a bare CalledProcessError with just an exit
+    code and no explanation (the bug behind the "exit 129, no message"
+    traceback a user hit in production: git had failed for a reason its
+    own stderr explained, but nothing surfaced it)."""
+    with pytest.raises(GitCommandError) as exc_info:
+        _run_git(["diff", "--this-flag-does-not-exist"], repo)
+    message = str(exc_info.value)
+    assert "--this-flag-does-not-exist" in message
+    # git's own stderr text (its usage message, for a bad flag) ends up
+    # in the message, not swallowed:
+    assert "usage: git diff" in message.lower()
