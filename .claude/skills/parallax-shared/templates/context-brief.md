@@ -34,6 +34,8 @@ subagent. A subagent should never need to re-derive any of this itself.
 - Nearby files:
 - Callers and callees of changed symbols:
 - Relevant historical changes:
+- Static analysis tool (Stage 1a — Layer 1: style/naming/formatting):
+- Static analysis result:
 
 ## Change Map (Stage 2)
 

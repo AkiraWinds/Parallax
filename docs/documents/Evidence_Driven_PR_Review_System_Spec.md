@@ -285,7 +285,8 @@ The first version will not:
 - perform exhaustive whole-repository audits for every PR;
 - run arbitrary untrusted commands without confirmation;
 - guarantee bug-free output;
-- enforce a specific cost or concurrency cap — left to the operator's own `config.py` and deployment (Section 16.5).
+- enforce a specific cost or concurrency cap — left to the operator's own `config.py` and deployment (Section 16.5);
+- emulate a linter or formatter with LLM judgment for style, naming, or formatting issues — these are deterministic checks and are delegated to the repository's own tooling instead (Stage 1a).
 
 ---
 
@@ -529,6 +530,15 @@ Read:
 - nearby files;
 - callers and callees;
 - relevant historical changes.
+
+### Stage 1a — Static Analysis (Layer 1, deterministic)
+
+Style, naming, and formatting issues ("Layer 1") are deterministic and cheaper and more reliable to catch with the repository's own tooling than with LLM judgment (Section 6). Detect whether the target repository has an existing linter/formatter configured (`.eslintrc*`, `[tool.ruff]`/`.flake8`, `golangci-lint.yml`, `.rustfmt.toml`, `biome.json`, etc.) and, if found, run its check command via a safe, read-only invocation (e.g. `ruff check .`, `eslint .`, `golangci-lint run`), scoped to the diff's changed files where the tool supports it.
+
+- If a tool ran: fold its raw output into the context brief and surface it verbatim in the final report's Static Analysis section, tagged as tool-verified evidence. It is never re-derived by, merged into, or attributed to a subagent's own findings.
+- If no tool is configured, or it fails to execute (not installed): do not attempt to emulate it with LLM judgment. Record "no static analysis tool detected" and note that Layer 1 (style, naming, formatting) is out of scope for this review; recommend the human add one.
+
+This step never blocks dispatch — subagents proceed regardless of whether static analysis ran or found anything.
 
 ### Stage 2 — Build Change Map
 
@@ -975,7 +985,7 @@ Guarantee that every review dimension's ruleset is available to the subagent res
 | Subagent                         | Owns                  | Dispatch condition            |
 | -------------------------------- | --------------------- | ----------------------------- |
 | A. Intent, Correctness & Testing | 18.1, 18.2, 18.8      | always                        |
-| B. Reliability & Operations      | 18.3, 18.9            | always                        |
+| B. Reliability & Operations      | 18.3, 18.9, 18.10     | always                        |
 | C. Security, Privacy & Data      | 18.4, 18.5            | always                        |
 | D. Architecture & Documentation  | 18.6, 18.7            | always                        |
 | E. Agent Runtime & Tooling       | 19.1–19.4             | Agent-System Extension active |
@@ -1060,6 +1070,8 @@ The PR Review system may map SANYI findings to merge impact, but must not alter 
 
 ## 18. General Review Dimensions
 
+These are judgment-based dimensions dispatched to subagents. They deliberately exclude style, naming, and formatting ("Layer 1") — that is deterministic and is handled by Stage 1a's static-analysis step, not by an LLM-judged dimension (Section 6).
+
 ### 18.1 Intent and Product Behavior
 
 - Does the PR solve the intended problem?
@@ -1124,6 +1136,8 @@ The PR Review system may map SANYI findings to merge impact, but must not alter 
 - **Evolution**: Does this change make future evolution easier or harder — does it paint the codebase into a corner?
 - **Rollback**: Can this change be rolled back cleanly if it needs to be reverted?
 - **Long-term contract**: Does this diff commit the codebase to a long-term contract (public API, schema, interface) it may come to regret?
+- **Magic numbers**: Are unexplained numeric or string literals used directly in logic, instead of named constants that convey intent?
+- **Dead code**: Is there code, branches, or exports left in the diff that are no longer reachable or used?
 
 ### 18.7 Documentation Accuracy
 
@@ -1153,6 +1167,15 @@ The PR Review system may map SANYI findings to merge impact, but must not alter 
 - **Migration**: If there's a data migration, is it safe to run against production data, and is it reversible?
 - **Documentation**: Is there documentation for anyone operating or debugging this in the future?
 - **Handoff**: If this needs handoff (to on-call, another team), is there enough context for them to act on it?
+
+### 18.10 Performance and Scale
+
+- **N+1 queries**: Does this diff introduce a query or external call inside a loop that could be batched into one call instead?
+- **Unbounded loops/results**: Can this operation iterate over or load an unbounded amount of data — is there a missing limit or pagination?
+- **Hot-path complexity**: Does this diff add an algorithm whose complexity could degrade badly at production scale (e.g., O(n²) over user-facing or growing data)?
+- **Missing indexes**: If this diff adds or changes a query pattern, does the underlying store have (or gain) an index to support it at scale?
+
+Evidence for this dimension is often incomplete without production data (query plans, load numbers) — when unverified, phrase findings as Hypothesis, not confirmed defects (Section 20).
 
 ---
 
@@ -1291,21 +1314,26 @@ Repository-specific DoD
 
 ## 3. Change and Execution Map
 
-## 4. What Looks Strong
+## 4. Static Analysis (Layer 1 — tool-verified, not LLM-judged)
 
-## 5. Blocking Findings
+- Tool run:
+- Findings: (raw linter/formatter output, or "no static analysis tool detected")
 
-## 6. Important Findings
+## 5. What Looks Strong
 
-## 7. Questions and Unverified Hypotheses
+## 6. Blocking Findings
 
-## 8. Suggestions
+## 7. Important Findings
 
-## 9. Testing and Evaluation Assessment
+## 8. Questions and Unverified Hypotheses
 
-## 10. Definition of Done Assessment
+## 9. Suggestions
 
-## 11. Source-System Summary
+## 10. Testing and Evaluation Assessment
+
+## 11. Definition of Done Assessment
+
+## 12. Source-System Summary
 
 ### Subagent Dispatch
 
@@ -1324,7 +1352,7 @@ Repository-specific DoD
 - source verdict:
 - findings imported:
 
-## 12. Suggested Merge Decision
+## 13. Suggested Merge Decision
 
 approve | comment | request_changes | insufficient_context
 ```

@@ -73,6 +73,36 @@ Fill in the rest of `templates/context-brief.md` (Repository Context,
 Change Map) exactly once. This brief is what every dispatched subagent
 receives — they must not re-derive it themselves.
 
+## Stage 1a — Static Analysis (Layer 1: style, naming, formatting)
+
+Style/naming/formatting issues are deterministic — cheaper and more
+reliable to catch with the repository's own linter/formatter than with
+LLM judgment, and no dispatched skill's dimensions check for them on
+purpose (parent spec Section 6, Section 18 intro). Before dispatching
+subagents:
+
+1. Detect whether the target repo has an existing linter/formatter
+   configured (e.g. `.eslintrc*` + a `package.json` lint script,
+   `[tool.ruff]` or `.flake8` in Python, `golangci-lint.yml`,
+   `.rustfmt.toml`, `biome.json`).
+2. If found, run its check command via `Bash` (e.g. `ruff check .`,
+   `eslint .`, `golangci-lint run`), scoped to the diff's changed files
+   where the tool supports it. This is a read-only check invocation —
+   never `--fix` or an auto-formatting write.
+3. Record the raw result in the context brief's Repository Context
+   (`Static analysis tool:` / `Static analysis result:`) and surface it
+   verbatim later in the report's Static Analysis section — tagged as
+   tool-verified evidence, never merged into or re-derived as a subagent
+   finding.
+4. If no tool is configured, or the run fails because the tool isn't
+   installed, do not emulate it with LLM judgment. Record "no static
+   analysis tool detected" and note in the report that Layer 1 (style,
+   naming, formatting) is out of scope for this review; recommend the
+   human add one.
+
+This step never blocks dispatch — proceed to Dispatch regardless of
+whether static analysis ran or found anything.
+
 ## Dispatch
 
 Always dispatch, in parallel, with the context brief:

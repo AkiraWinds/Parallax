@@ -25,6 +25,8 @@ Apply these two review dimensions to the diff you're given.
 - **Evolution**: Does this change make future evolution easier or harder — does it paint the codebase into a corner?
 - **Rollback**: Can this change be rolled back cleanly if it needs to be reverted?
 - **Long-term contract**: Does this diff commit the codebase to a long-term contract (public API, schema, interface) it may come to regret?
+- **Magic numbers**: Are unexplained numeric or string literals used directly in logic, instead of named constants that convey intent?
+- **Dead code**: Is there code, branches, or exports left in the diff that are no longer reachable or used?
 
 ## Documentation Accuracy
 

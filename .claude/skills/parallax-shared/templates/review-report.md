@@ -12,21 +12,25 @@ subagent's combined canonical findings.
 
 ## 3. Change and Execution Map
 
-## 4. What Looks Strong
+## 4. Static Analysis (Layer 1 — tool-verified, not LLM-judged)
+- Tool run:
+- Findings: (raw linter/formatter output, or "no static analysis tool detected")
 
-## 5. Blocking Findings
+## 5. What Looks Strong
 
-## 6. Important Findings
+## 6. Blocking Findings
 
-## 7. Questions and Unverified Hypotheses
+## 7. Important Findings
 
-## 8. Suggestions
+## 8. Questions and Unverified Hypotheses
 
-## 9. Testing and Evaluation Assessment
+## 9. Suggestions
 
-## 10. Definition of Done Assessment
+## 10. Testing and Evaluation Assessment
 
-## 11. Source-System Summary
+## 11. Definition of Done Assessment
+
+## 12. Source-System Summary
 
 ### Subagent Dispatch
 - A (Intent, Correctness & Testing): dispatched / completed | failed after retries
@@ -43,7 +47,7 @@ subagent's combined canonical findings.
 - source verdict:
 - findings imported:
 
-## 12. Suggested Merge Decision
+## 13. Suggested Merge Decision
 
 approve | comment | request_changes | insufficient_context
 ```

@@ -2,7 +2,8 @@
 name: reliability-operations
 description: >
   Review dimensions: reliability (retries, idempotency, partial failure,
-  recovery) and operational readiness (logging, rollout, rollback).
+  recovery), performance and scale (N+1 queries, unbounded loops, hot-path
+  complexity), and operational readiness (logging, rollout, rollback).
 allowed-tools:
   - Read
   - Grep
@@ -12,7 +13,7 @@ allowed-tools:
 
 # Reliability & Operations
 
-Apply these two review dimensions to the diff you're given.
+Apply these three review dimensions to the diff you're given.
 
 ## Reliability
 
@@ -25,6 +26,15 @@ Apply these two review dimensions to the diff you're given.
 - **Recovery**: If something fails, can the system recover automatically, or does it require manual intervention?
 - **Cleanup**: Are resources (connections, locks, temp files, background tasks) cleaned up on both success and failure paths?
 - **Consistency**: Does this change preserve consistency between related pieces of state (e.g., cache vs. source of truth)?
+
+## Performance and Scale
+
+- **N+1 queries**: Does this diff introduce a query or external call inside a loop that could be batched into one call instead?
+- **Unbounded loops/results**: Can this operation iterate over or load an unbounded amount of data — is there a missing limit or pagination?
+- **Hot-path complexity**: Does this diff add an algorithm whose complexity could degrade badly at production scale (e.g., O(n²) over user-facing or growing data)?
+- **Missing indexes**: If this diff adds or changes a query pattern, does the underlying store have (or gain) an index to support it at scale?
+
+Evidence for this dimension is often incomplete without production data (query plans, load numbers) — when unverified, phrase findings as **Hypothesis**, not confirmed defects (`references/evidence-model.md` in `parallax-shared`).
 
 ## Operations and Delivery
 
