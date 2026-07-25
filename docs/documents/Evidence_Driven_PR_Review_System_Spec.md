@@ -1070,60 +1070,60 @@ The PR Review system may map SANYI findings to merge impact, but must not alter 
 
 ### 18.2 Correctness and Contracts
 
-- Inputs;
-- outputs;
-- schemas;
-- state transitions;
-- invariants;
-- edge cases;
-- ordering;
-- concurrency;
-- compatibility;
-- **cross-usage consistency**: when the diff modifies a shared schema/type, check all of its usages across the repo, not only the diff's own callers.
+- **Inputs**: Are inputs validated and handled for the full range of values they can actually take, not just the happy path?
+- **Outputs**: Do outputs match the documented or implied contract (type, shape, units, nullability)?
+- **Schemas**: If a schema changed, is it backward compatible, or is the migration/versioning handled explicitly?
+- **State transitions**: Are state transitions well-defined — can the system land in an invalid or unreachable state?
+- **Invariants**: Are the invariants the code relies on still upheld after this change?
+- **Edge cases**: What edge cases (empty, null, zero, max, duplicate, out-of-range) are exercised, and which are missing?
+- **Ordering**: Does ordering matter here, and is it guaranteed where the code assumes it?
+- **Concurrency**: Is concurrent access to shared state safe (races, locks, atomicity)?
+- **Compatibility**: Is this change compatible with existing callers, stored data, or in-flight requests during rollout?
+- **Cross-usage consistency**: when the diff modifies a shared schema/type, check all of its usages across the repo, not only the diff's own callers.
 
 ### 18.3 Reliability
 
-- retries;
-- timeouts;
-- idempotency;
-- partial failures;
-- fallback;
-- cancellation;
-- recovery;
-- cleanup;
-- consistency.
+- **Retries**: Are retries used where transient failures are expected, and avoided where they'd cause harm (e.g., non-idempotent writes)?
+- **Timeouts**: Are timeouts set for external calls, and are they reasonable for the operation?
+- **Idempotency**: Is the operation idempotent, so a retry or duplicate delivery doesn't cause incorrect state?
+- **Partial failures**: What happens on partial failure mid-operation — does the system end up in a consistent state?
+- **Fallback**: Is there a fallback behavior when a dependency is unavailable, or does the whole path fail hard?
+- **Cancellation**: Can the operation be cancelled cleanly, and does cancellation leave things in a safe state?
+- **Recovery**: If something fails, can the system recover automatically, or does it require manual intervention?
+- **Cleanup**: Are resources (connections, locks, temp files, background tasks) cleaned up on both success and failure paths?
+- **Consistency**: Does this change preserve consistency between related pieces of state (e.g., cache vs. source of truth)?
 
 ### 18.4 Security and Privacy
 
-- authn;
-- authz;
-- tenant isolation;
-- PII;
-- secrets;
-- injection;
-- unsafe writes;
-- auditability.
+- **Authn**: Is authentication required where it should be, and not bypassable?
+- **Authz**: Is authorization checked at the right boundary — not just "is this user logged in" but "can this user do this specific thing"?
+- **Tenant isolation**: If this is multi-tenant, can one tenant's data or actions leak into another's?
+- **PII**: Does this diff introduce, log, or expose PII that wasn't handled carefully before?
+- **Secrets**: Are secrets (keys, tokens, credentials) kept out of code, logs, and error messages?
+- **Injection**: Is user-controlled input safe from injection (SQL, command, template, prompt) at every sink it reaches?
+- **Unsafe writes**: Can this diff perform an unsafe write — one a malicious or malformed input could turn into an unintended data modification?
+- **Auditability**: Is there an audit trail for sensitive actions this change introduces?
 
 ### 18.5 Data and State
 
-- validation;
-- provenance;
-- migration;
-- serialization;
-- stale data;
-- duplicated state;
-- source of truth.
+- **Validation**: Is data validated at the boundary where it enters the system, not just assumed correct downstream?
+- **Provenance**: Is the provenance of the data (where it came from, how trustworthy it is) tracked or lost?
+- **Migration**: If a migration is involved, is it safe for existing data, and is there a rollback path?
+- **Serialization**: Does serialization/deserialization round-trip correctly, including edge cases (nulls, new/missing fields)?
+- **Stale data**: Can this change read or act on stale data, and does that matter here?
+- **Duplicated state**: Does this introduce duplicated state that can drift out of sync with its source?
+- **Source of truth**: Is it clear what the single source of truth is for this data, or does this diff create a second one?
 
 ### 18.6 Architecture and Maintainability
 
-- boundaries;
-- dependency direction;
-- coupling;
-- abstraction;
-- duplication;
-- evolution;
-- rollback;
-- long-term contract.
+- **Boundaries**: Are module/service boundaries respected, or does the diff reach across a layer it shouldn't?
+- **Dependency direction**: Does the dependency direction stay consistent (e.g., does a lower-level module now import from a higher-level one)?
+- **Coupling**: Is coupling increased in a way that makes future changes harder, or kept loose where it matters?
+- **Abstraction**: Is the abstraction at the right level — not over-engineered for a one-off, not leaking implementation details it shouldn't?
+- **Duplication**: Is logic duplicated that already exists elsewhere in the codebase?
+- **Evolution**: Does this change make future evolution easier or harder — does it paint the codebase into a corner?
+- **Rollback**: Can this change be rolled back cleanly if it needs to be reverted?
+- **Long-term contract**: Does this diff commit the codebase to a long-term contract (public API, schema, interface) it may come to regret?
 
 ### 18.7 Documentation Accuracy
 
@@ -1133,26 +1133,26 @@ The PR Review system may map SANYI findings to merge impact, but must not alter 
 
 ### 18.8 Testing
 
-- unit;
-- integration;
-- contract;
-- regression;
-- end-to-end;
-- negative paths;
-- useful assertions;
-- failure-before-fix evidence.
+- **Unit**: Do unit tests cover the new/changed logic in isolation?
+- **Integration**: Do integration tests cover how this interacts with the components it depends on?
+- **Contract**: If a contract (API, schema, interface) changed, is there a contract test guarding it?
+- **Regression**: Does a regression test exist for the specific bug this PR fixes, if it's a fix?
+- **End-to-end**: Is there end-to-end coverage exercising this change through a realistic path?
+- **Negative paths**: Are negative/failure paths tested, not just the success case?
+- **Useful assertions**: Do the assertions actually verify the behavior that matters, or just that the code ran without throwing?
+- **Failure-before-fix evidence**: For bug fixes, is there evidence the test failed before the fix and passes after?
 
 ### 18.9 Operations and Delivery
 
-- logging;
-- metrics;
-- tracing;
-- deployment;
-- rollout;
-- rollback;
-- migration;
-- documentation;
-- handoff.
+- **Logging**: Is there enough logging to diagnose a failure in production without needing to reproduce it locally?
+- **Metrics**: Are metrics emitted for the behavior someone would need to monitor (latency, error rate, volume)?
+- **Tracing**: Is this change traceable end-to-end if it's part of a larger request or workflow?
+- **Deployment**: Does deployment require special sequencing (config first, migration first, feature flag)?
+- **Rollout**: Is the rollout staged or guarded (flag, percentage, canary), or does it go to 100% immediately?
+- **Rollback**: Can this be rolled back safely if it causes a problem in production?
+- **Migration**: If there's a data migration, is it safe to run against production data, and is it reversible?
+- **Documentation**: Is there documentation for anyone operating or debugging this in the future?
+- **Handoff**: If this needs handoff (to on-call, another team), is there enough context for them to act on it?
 
 ---
 
