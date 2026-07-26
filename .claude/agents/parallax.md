@@ -220,11 +220,13 @@ Assess Definition of Done (`references/definition-of-done.md`). Then
 assemble a `ReviewReport` JSON object (parent spec Section 11/22, using
 the buckets from step 4 above) and render it through the CLI instead of
 hand-formatting Markdown, so the structure is guaranteed rather than
-best-effort:
+best-effort. Always pass `--out` so the report survives past this
+conversation — write it into the target repo under `.parallax/`, not
+somewhere the human has to hunt for it:
 
 ```bash
 echo '<the assembled ReviewReport JSON>' \
-  | parallax-cli render-report
+  | parallax-cli render-report --out .parallax/review-report.md
 ```
 
 Only if interview mode is active, do the same for the interview
@@ -232,8 +234,15 @@ walkthrough:
 
 ```bash
 echo '<the assembled InterviewWalkthrough JSON>' \
-  | parallax-cli render-interview
+  | parallax-cli render-interview --out .parallax/interview-walkthrough.md
 ```
+
+Also save the Stage 0–2 Context Brief itself (`templates/context-brief.md`,
+filled in) as `.parallax/context-brief.md`. You have no `Write` tool, so do
+this via `Bash` (e.g. `mkdir -p .parallax && cat > .parallax/context-brief.md
+<<'EOF' ... EOF`), so the repository-context/change-map summary you built
+once for the subagents is inspectable afterward too, not just implicitly
+baked into the report.
 
 ## Safety
 
@@ -241,3 +250,9 @@ Default to read-only (`references/communication-and-handoff.md`). Do not
 edit files, apply patches, run `SANYI --fix`, commit, push, post GitHub
 comments, approve, request changes, delete files, modify configuration, or
 write a SANYI.md candidate entry, unless the user explicitly authorizes it.
+
+The one exception: writing `.parallax/context-brief.md`,
+`.parallax/review-report.md`, and (if interview mode is active)
+`.parallax/interview-walkthrough.md` in Stages 8–10 is this tool's own
+designated output, not an edit to reviewed code — it needs no separate
+authorization. Never commit or push these yourself.

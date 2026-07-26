@@ -183,6 +183,20 @@ class TestRenderReport:
         assert result.returncode == 1
         assert result.stdout == ""
 
+    def test_out_flag_writes_file_and_still_prints_to_stdout(self, tmp_path):
+        from tests.fixtures.sample_report import build_sample_report
+        from parallax.orchestration.report_builder import build_review_report
+
+        report = build_sample_report()
+        out_path = tmp_path / "nested" / "review-report.md"
+        result = run_cli(
+            "render-report", "--out", str(out_path), input_obj=report.model_dump(mode="json")
+        )
+        assert result.returncode == 0
+        expected = build_review_report(report)
+        assert result.stdout == expected
+        assert out_path.read_text() == expected
+
 
 class TestRenderInterview:
     def test_renders_expected_headers(self):

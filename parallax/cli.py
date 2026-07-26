@@ -166,26 +166,40 @@ def cmd_diff_scope(args: argparse.Namespace) -> int:
 
 def cmd_render_report(args: argparse.Namespace) -> int:
     """Section 22's exact Markdown structure. Input: a full ReviewReport
-    JSON object. Output: Markdown (not JSON) on stdout."""
+    JSON object. Output: Markdown (not JSON) on stdout, and also written to
+    --out if given, so the report survives past the conversation."""
     try:
         report = ReviewReport.model_validate(_read_input(args))
     except ValidationError as exc:
         print(exc.json(), file=sys.stderr)
         return 1
-    print(build_review_report(report), end="")
+    markdown = build_review_report(report)
+    if args.out:
+        _write_out(args.out, markdown)
+    print(markdown, end="")
     return 0
 
 
 def cmd_render_interview(args: argparse.Namespace) -> int:
     """Section 23's exact Markdown structure. Input: an InterviewWalkthrough
-    JSON object. Output: Markdown (not JSON) on stdout."""
+    JSON object. Output: Markdown (not JSON) on stdout, and also written to
+    --out if given, so the walkthrough survives past the conversation."""
     try:
         walkthrough = InterviewWalkthrough.model_validate(_read_input(args))
     except ValidationError as exc:
         print(exc.json(), file=sys.stderr)
         return 1
-    print(build_interview_walkthrough(walkthrough), end="")
+    markdown = build_interview_walkthrough(walkthrough)
+    if args.out:
+        _write_out(args.out, markdown)
+    print(markdown, end="")
     return 0
+
+
+def _write_out(path: str, content: str) -> None:
+    out_path = Path(path)
+    out_path.parent.mkdir(parents=True, exist_ok=True)
+    out_path.write_text(content)
 
 
 # --- wiring -------------------------------------------------------------
@@ -212,6 +226,13 @@ def build_parser() -> argparse.ArgumentParser:
             "--input",
             help="path to a JSON input file (default: read JSON from stdin)",
         )
+        if name in ("render-report", "render-interview"):
+            p.add_argument(
+                "--out",
+                default=None,
+                help="optional path to also write the rendered Markdown to, "
+                "creating parent directories as needed",
+            )
         p.set_defaults(handler=handler)
 
     diff_scope_parser = sub.add_parser(
