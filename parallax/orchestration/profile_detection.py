@@ -57,6 +57,20 @@ _SIGNAL_CONTENT_PATTERNS: dict[str, re.Pattern[str]] = {
         re.IGNORECASE,
     ),
     "agent_traces": re.compile(r"\b(agent[_-]?trace|trace[_-]?id)\b", re.IGNORECASE),
+    # Section 9.2 gap: a subprocess call that shells out to a known
+    # CLI-based coding/agent tool is agent-system surface even though it
+    # imports no LLM SDK and lives at no /agents?/ path — e.g. piping
+    # scraped content into `subprocess.run(["claude", ...])` as an AI
+    # fallback path. Requires both a process-spawning call and a known
+    # agent-CLI binary name to appear somewhere in the same file, in
+    # either order.
+    "cli_agent_subprocess": re.compile(
+        r"(?=[\s\S]*\b(?:subprocess\.(?:run|Popen|call|check_output)|"
+        r"os\.system|os\.popen|child_process\.(?:exec|spawn))\b)"
+        r"(?=[\s\S]*\b(?:claude|claude-code|codex|aider|cursor-agent|"
+        r"gemini-cli|cli-agent|llm-cli|copilot-cli)\b)",
+        re.IGNORECASE,
+    ),
 }
 
 _SIGNAL_PATH_PATTERNS: dict[str, re.Pattern[str]] = {

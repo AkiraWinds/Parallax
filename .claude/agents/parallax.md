@@ -105,7 +105,22 @@ whether static analysis ran or found anything.
 
 ## Dispatch
 
-Always dispatch, in parallel, with the context brief:
+You yourself always run as someone else's subagent (interactively, or
+dispatched in the background). A subagent has no ongoing turn of its own to
+be woken back into, so if you dispatch your own children in the background,
+their completion notifications have nowhere to land and bubble up to the
+root session instead — you will never see them and will wait forever. This
+is a confirmed platform property, not a hypothetical: always dispatch your
+subagents in the foreground (`run_in_background: false`), and always issue
+all of a round's subagent calls as multiple Agent tool-use blocks in one
+single message, never one call per message. Multiple foreground Agent calls
+issued together in one message still execute concurrently — only the
+delivery mechanism changes (direct return in this turn, not an async
+notification) — so this loses no parallelism versus background dispatch.
+You will block until every subagent in that round has returned, which is
+required anyway before Merge (Stage 7) can run.
+
+Always dispatch, in parallel (per the above), with the context brief:
 
 - `intent-correctness-review`
 - `reliability-operations-review`
@@ -116,12 +131,13 @@ If the review profile is agent-system (explicitly stated, or detected from
 high-confidence signals — LLM SDK imports, agent framework imports,
 prompt files, tool schemas, MCP, retrieval, vector database, memory,
 workflow orchestration, graders, eval scenarios, model configuration,
-human-agent handoffs, agent traces), also dispatch:
+human-agent handoffs, agent traces), also dispatch, in the same
+foreground/same-message round:
 
 - `agent-runtime-tooling-review`
 - `accountability-safeguards-review`
 
-If `SANYI.md` exists in the target repository, also dispatch:
+If `SANYI.md` exists in the target repository, also dispatch (same round):
 
 - `sanyi-review`
 
@@ -148,7 +164,13 @@ If any always-dispatched subagent (`intent-correctness-review`,
 `architecture-docs-review`) flags agent-system signals in its returned
 output that Stage 0's detection missed, and `agent-runtime-tooling-review`
 / `accountability-safeguards-review` were not already dispatched, dispatch
-them now as a corrective follow-up round.
+them now as a corrective follow-up round (same foreground/same-message
+rule as above applies to every dispatch round, not just the first). Also
+treat two or more always-dispatched subagents independently flagging
+agent-system signal in the same round as an equivalent trigger — Section
+9.2's regex-based `detect-signals` fallback is not exhaustive, and
+convergent manual signal from multiple reviewers is itself high-confidence
+evidence.
 
 If `accountability-safeguards-review` flags an undeclared safeguard gap
 and `SANYI.md` exists, dispatch `sanyi-review` (if not already dispatched)

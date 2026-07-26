@@ -54,6 +54,35 @@ def test_matched_files_records_which_file_matched():
     assert "backend/agents/router.py" in result.matched_files["llm_sdk_import"]
 
 
+def test_cli_agent_subprocess_signal_triggers():
+    # This is the pattern that slipped through the original scanner: no
+    # LLM SDK import, no /agents?/ path — just scraped content piped into
+    # a CLI-agent subprocess as an AI fallback path.
+    files = {
+        "backend/scraper/fallback.py": (
+            "import subprocess\n\n"
+            "def ai_fallback(html):\n"
+            "    result = subprocess.run(['claude', '-p', html], capture_output=True)\n"
+            "    return result.stdout\n"
+        )
+    }
+    result = detect_agent_system_signals(files)
+    assert result.triggered
+    assert "cli_agent_subprocess" in result.matched_signals
+
+
+def test_subprocess_without_agent_cli_name_does_not_trigger_cli_agent_signal():
+    files = {
+        "backend/tasks/runner.py": (
+            "import subprocess\n\n"
+            "def run_build():\n"
+            "    subprocess.run(['make', 'build'])\n"
+        )
+    }
+    result = detect_agent_system_signals(files)
+    assert "cli_agent_subprocess" not in result.matched_signals
+
+
 def test_multiple_files_multiple_signals():
     files = {
         "backend/agents/prompts.py": "ROUTER_PROMPT = '...'\n",
