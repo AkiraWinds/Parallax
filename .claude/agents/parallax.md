@@ -120,11 +120,27 @@ notification) — so this loses no parallelism versus background dispatch.
 You will block until every subagent in that round has returned, which is
 required anyway before Merge (Stage 7) can run.
 
+Before dispatching, use the context brief's Change Map (the changed file
+list, and diff content where inlined) to judge — conservatively — whether
+`reliability-operations-review` and/or `security-privacy-data-review` are
+clearly inapplicable to this specific diff. "Clearly inapplicable" means,
+for example, the diff touches only documentation/comments/markdown files,
+or only test fixtures/snapshots, with zero production code, config,
+dependency, auth, or data-handling surface touched. If one of these two
+dimensions is clearly inapplicable, skip dispatching it for this PR only,
+and record the skip plus a one-sentence reason in the report's Subagent
+Dispatch section (`templates/review-report.md`) instead of silently
+omitting it. Do not extend this skip logic to `intent-correctness-review`
+or `architecture-docs-review` — those two always dispatch regardless,
+since virtually every PR has intent and doc/architecture surface. Bias
+conservative: when there is any doubt, dispatch anyway — this is a
+targeted skip for obviously-irrelevant cases only, not a general filter.
+
 Always dispatch, in parallel (per the above), with the context brief:
 
 - `intent-correctness-review`
-- `reliability-operations-review`
-- `security-privacy-data-review`
+- `reliability-operations-review` (unless judged clearly inapplicable above)
+- `security-privacy-data-review` (unless judged clearly inapplicable above)
 - `architecture-docs-review`
 
 If the review profile is agent-system (explicitly stated, or detected from
@@ -213,6 +229,28 @@ Every subagent returns findings in the canonical schema with its own
    The `sanyi-default-impact` subcommand gives the Section 12.1 starting
    default for a SANYI-sourced finding's `merge_impact` — a suggestion you
    may override per Section 14.2, not a value to invent from memory.
+
+5. Before assembling the final report, cap the `suggestions` bucket for
+   display so low-value nits don't drown out blockers/important findings:
+
+   ```bash
+   echo '<JSON list of the suggestions bucket from step 4>' \
+     | parallax-cli cap-suggestions
+   ```
+
+   Put only the returned `capped` findings into the assembled
+   `ReviewReport.suggestions` field, and set `suggestions_omitted_count`
+   to the returned `omitted_count`. `render-report` renders exactly what
+   it's given — it has no separate mechanism to render a "full list"
+   alongside a "capped list" — so `render-report`'s output only ever
+   shows the capped set, plus a note it generates itself from
+   `suggestions_omitted_count` when nonzero. The omitted findings are not
+   currently persisted to disk anywhere: they remain visible earlier in
+   this conversation (Stage 7's dedup/bucket output) but are not part of
+   the `.parallax/review-report.md` artifact. If a durable record of the
+   full, uncapped finding set matters for a given review, say so
+   explicitly rather than implying `render-report`'s JSON input
+   preserves it — it doesn't.
 
 ## Stages 8–10
 

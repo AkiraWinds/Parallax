@@ -127,7 +127,14 @@ def build_review_report(report: ReviewReport) -> str:
             "",
             "## 8. Suggestions",
             "",
-            _render_findings_section(report.suggestions),
+            _render_findings_section(report.suggestions)
+            + (
+                f"\n\n_+{report.suggestions_omitted_count} additional minor "
+                "suggestions omitted from this section (lower merge-impact/"
+                "confidence than those shown above)._"
+                if report.suggestions_omitted_count
+                else ""
+            ),
             "",
             "## 9. Testing and Evaluation Assessment",
             "",

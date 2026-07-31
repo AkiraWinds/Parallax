@@ -355,6 +355,7 @@ class ReviewReport(BaseModel):
     important_findings: list[ReviewFinding] = Field(default_factory=list)
     questions_and_hypotheses: list[ReviewFinding] = Field(default_factory=list)
     suggestions: list[ReviewFinding] = Field(default_factory=list)
+    suggestions_omitted_count: int = 0
     testing_evaluation_assessment: str
     definition_of_done_assessment: str
     subagent_dispatch: list[SubagentDispatchEntry]

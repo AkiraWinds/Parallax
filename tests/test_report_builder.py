@@ -66,6 +66,20 @@ def test_sanyi_source_preserved_distinctly_from_merge_impact():
     assert "Merge impact: blocker" in rendered
 
 
+def test_suggestions_omitted_count_renders_note():
+    report = build_sample_report()
+    report.suggestions_omitted_count = 3
+    rendered = build_review_report(report)
+    assert "+3 additional minor suggestions omitted" in rendered
+
+
+def test_zero_omitted_count_renders_no_note():
+    report = build_sample_report()
+    assert report.suggestions_omitted_count == 0
+    rendered = build_review_report(report)
+    assert "omitted" not in rendered
+
+
 def test_interview_walkthrough_renders_expected_headers():
     walkthrough = InterviewWalkthrough(
         summary_60s="A retry wrapper was added around the payment webhook handler.",

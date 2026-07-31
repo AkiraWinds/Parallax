@@ -95,6 +95,45 @@ class TestBucket:
         assert buckets["questions_and_hypotheses"] == ["PR-A-002"]
 
 
+class TestCapSuggestions:
+    def test_caps_to_default_max_count_of_five(self):
+        from parallax.schemas.models import MergeImpact
+
+        findings = [
+            make_finding(f"PR-A-{i:03d}", merge_impact=MergeImpact.NIT) for i in range(1, 8)
+        ]
+        payload = [f.model_dump(mode="json") for f in findings]
+        result = run_cli("cap-suggestions", input_obj=payload)
+        assert result.returncode == 0
+        data = json.loads(result.stdout)
+        assert data["capped"] == [f"PR-A-{i:03d}" for i in range(1, 6)]
+        assert data["omitted_count"] == 2
+
+    def test_respects_max_count_flag(self):
+        from parallax.schemas.models import MergeImpact
+
+        findings = [
+            make_finding(f"PR-A-{i:03d}", merge_impact=MergeImpact.NIT) for i in range(1, 4)
+        ]
+        payload = [f.model_dump(mode="json") for f in findings]
+        result = run_cli("cap-suggestions", "--max-count", "2", input_obj=payload)
+        assert result.returncode == 0
+        data = json.loads(result.stdout)
+        assert data["capped"] == ["PR-A-001", "PR-A-002"]
+        assert data["omitted_count"] == 1
+
+    def test_no_capping_when_under_max_count(self):
+        from parallax.schemas.models import MergeImpact
+
+        findings = [make_finding("PR-A-001", merge_impact=MergeImpact.NIT)]
+        payload = [f.model_dump(mode="json") for f in findings]
+        result = run_cli("cap-suggestions", input_obj=payload)
+        assert result.returncode == 0
+        data = json.loads(result.stdout)
+        assert data["capped"] == ["PR-A-001"]
+        assert data["omitted_count"] == 0
+
+
 class TestSanyiDefaultImpact:
     @pytest.mark.parametrize(
         "severity,expected",

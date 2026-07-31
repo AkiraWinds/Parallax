@@ -81,3 +81,26 @@ def bucket_findings(
         "questions_and_hypotheses": sort_by_merge_impact(questions_and_hypotheses),
         "suggestions": sort_by_merge_impact(suggestions),
     }
+
+
+def cap_suggestions(
+    findings: list[ReviewFinding], max_count: int = 5
+) -> tuple[list[ReviewFinding], int]:
+    """Cap the "suggestions" bucket (`bucket_findings()["suggestions"]`,
+    already sorted by `sort_by_merge_impact`) for display purposes only.
+
+    This is purely a rendering concern, not a change to evidence
+    classification or merge-impact assignment: nit/suggestion-level
+    findings pile up quickly and, shown with the same visual weight as
+    blockers, drown out the findings that actually matter. The full
+    finding set is never mutated or dropped here — this only decides how
+    many of the lowest-priority findings get top-level prominence in the
+    rendered report, and reports how many were left out so that count can
+    still be surfaced (e.g. "+N additional minor suggestions").
+
+    Does not mutate `findings`. Returns `(findings[:max_count],
+    omitted_count)` where `omitted_count` is never negative.
+    """
+    capped = list(findings[:max_count])
+    omitted_count = max(0, len(findings) - max_count)
+    return capped, omitted_count

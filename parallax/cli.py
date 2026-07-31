@@ -28,6 +28,7 @@ from parallax.orchestration.deduplication import find_duplicate_clusters
 from parallax.orchestration.diff_scope import GitCommandError, NoBaseBranchError, resolve_diff_scope
 from parallax.orchestration.prioritization import (
     bucket_findings,
+    cap_suggestions,
     default_merge_impact_for_sanyi_severity,
     sort_by_merge_impact,
 )
@@ -115,6 +116,29 @@ def cmd_bucket(args: argparse.Namespace) -> int:
         return 1
     buckets = bucket_findings(findings)
     _emit({name: [f.review_finding_id for f in fs] for name, fs in buckets.items()})
+    return 0
+
+
+def cmd_cap_suggestions(args: argparse.Namespace) -> int:
+    """Display-only cap on the "suggestions" bucket (`bucket`'s
+    `suggestions` output), so nit-level findings don't drown out
+    blockers/important findings in the rendered report body. Input: a JSON
+    list of findings (already sorted, e.g. `bucket`'s `suggestions`
+    value). Output: `{"capped": [...review_finding_ids], "omitted_count":
+    N}` — the full finding set is never dropped, only what the top-level
+    report displays."""
+    try:
+        findings = _FindingList.validate_python(_read_input(args))
+    except ValidationError as exc:
+        _emit_validation_error(exc)
+        return 1
+    capped, omitted_count = cap_suggestions(findings, max_count=args.max_count)
+    _emit(
+        {
+            "capped": [f.review_finding_id for f in capped],
+            "omitted_count": omitted_count,
+        }
+    )
     return 0
 
 
@@ -241,6 +265,21 @@ def build_parser() -> argparse.ArgumentParser:
     diff_scope_parser.add_argument("--repo-path", default=".")
     diff_scope_parser.add_argument("--base-branch", default=None)
     diff_scope_parser.set_defaults(handler=cmd_diff_scope)
+
+    cap_suggestions_parser = sub.add_parser(
+        "cap-suggestions", help=(cmd_cap_suggestions.__doc__ or "").strip().splitlines()[0]
+    )
+    cap_suggestions_parser.add_argument(
+        "--input",
+        help="path to a JSON input file (default: read JSON from stdin)",
+    )
+    cap_suggestions_parser.add_argument(
+        "--max-count",
+        type=int,
+        default=5,
+        help="maximum number of suggestions to keep in the top-level display (default: 5)",
+    )
+    cap_suggestions_parser.set_defaults(handler=cmd_cap_suggestions)
 
     return parser
 

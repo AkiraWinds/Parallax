@@ -11,6 +11,7 @@ from __future__ import annotations
 
 from parallax.orchestration.prioritization import (
     bucket_findings,
+    cap_suggestions,
     default_merge_impact_for_sanyi_severity,
     sort_by_merge_impact,
 )
@@ -119,3 +120,40 @@ class TestBucketFindings:
         buckets = bucket_findings(findings)
         all_ids = [f.review_finding_id for bucket in buckets.values() for f in bucket]
         assert sorted(all_ids) == ["PR-A-001", "PR-A-002", "PR-A-003"]
+
+
+class TestCapSuggestions:
+    def _make_suggestions(self, n: int) -> list:
+        return [
+            make_finding(f"PR-A-{i:03d}", merge_impact=MergeImpact.NIT) for i in range(1, n + 1)
+        ]
+
+    def test_fewer_than_max_count_is_not_capped(self):
+        findings = self._make_suggestions(3)
+        capped, omitted_count = cap_suggestions(findings, max_count=5)
+        assert capped == findings
+        assert omitted_count == 0
+
+    def test_exactly_max_count_is_not_capped(self):
+        findings = self._make_suggestions(5)
+        capped, omitted_count = cap_suggestions(findings, max_count=5)
+        assert capped == findings
+        assert omitted_count == 0
+
+    def test_more_than_max_count_is_capped_with_correct_omitted_count(self):
+        findings = self._make_suggestions(8)
+        capped, omitted_count = cap_suggestions(findings, max_count=5)
+        assert capped == findings[:5]
+        assert omitted_count == 3
+
+    def test_default_max_count_is_five(self):
+        findings = self._make_suggestions(7)
+        capped, omitted_count = cap_suggestions(findings)
+        assert capped == findings[:5]
+        assert omitted_count == 2
+
+    def test_does_not_mutate_input(self):
+        findings = self._make_suggestions(8)
+        original = list(findings)
+        cap_suggestions(findings, max_count=5)
+        assert findings == original

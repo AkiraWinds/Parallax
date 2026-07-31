@@ -705,6 +705,11 @@
       "title": "Suggestions",
       "type": "array"
     },
+    "suggestions_omitted_count": {
+      "default": 0,
+      "title": "Suggestions Omitted Count",
+      "type": "integer"
+    },
     "testing_evaluation_assessment": {
       "title": "Testing Evaluation Assessment",
       "type": "string"

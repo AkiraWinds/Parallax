@@ -67,3 +67,20 @@ rule to skip:
 echo '{"severity": "warning"}' \
   | parallax-cli sanyi-default-impact
 ```
+
+## Display cap on nit/suggestion findings
+
+Every nit/suggestion finding still gets the same rigor when it's found and
+classified — the cap below is a display convention, not a change to
+evidence classification or merge-impact assignment. In the rendered
+report body, the Suggestions section shows only the top N (default 5, by
+merge-impact/confidence order) suggestion-level findings via
+`parallax-cli cap-suggestions`; `ReviewReport.suggestions_omitted_count`
+carries the remainder, and `render-report` turns it into a one-line note
+(e.g. "+3 additional minor suggestions omitted") rather than silently
+dropping the count. The omitted findings themselves are not written to
+`.parallax/review-report.md` — that artifact only ever contains the
+capped set. They remain visible earlier in the review conversation
+(Stage 7's dedup/bucket output), but there is currently no separate
+persisted file holding the full, uncapped finding set — don't claim one
+exists when writing up a report.

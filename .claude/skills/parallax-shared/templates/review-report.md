@@ -25,6 +25,9 @@ subagent's combined canonical findings.
 ## 8. Questions and Unverified Hypotheses
 
 ## 9. Suggestions
+(capped to top N by merge-impact/confidence; `render-report` appends an
+omitted-count note from `suggestions_omitted_count` when truncated — the
+omitted findings are not otherwise persisted)
 
 ## 10. Testing and Evaluation Assessment
 
@@ -34,8 +37,8 @@ subagent's combined canonical findings.
 
 ### Subagent Dispatch
 - A (Intent, Correctness & Testing): dispatched / completed | failed after retries
-- B (Reliability & Operations): dispatched / completed | failed after retries
-- C (Security, Privacy & Data): dispatched / completed | failed after retries
+- B (Reliability & Operations): dispatched / completed | skipped (dimension inapplicable — <one-sentence reason>) | failed after retries
+- C (Security, Privacy & Data): dispatched / completed | skipped (dimension inapplicable — <one-sentence reason>) | failed after retries
 - D (Architecture & Documentation): dispatched / completed | failed after retries
 - E (Agent Runtime & Tooling): dispatched | skipped (Agent-System Extension not active) / completed | failed after retries
 - F (Accountability & Safeguards): dispatched | skipped (Agent-System Extension not active) / completed | failed after retries
